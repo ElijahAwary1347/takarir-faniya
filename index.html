@@ -112,6 +112,27 @@ tr:nth-child(even) td{background:var(--s2)}tr:hover td{background:var(--gold-bg)
 </style>
 </head>
 <body>
+<div class="mo" id="gateModal" style="display:flex;background:linear-gradient(135deg,#2A1D08,#1A1204);backdrop-filter:blur(6px)">
+  <div class="modal" style="max-width:440px;text-align:center;padding:36px 30px 30px">
+    <img id="gateLogoImg" style="height:78px;width:78px;object-fit:contain;border-radius:50%;border:3px solid var(--gold);background:#fff;padding:3px;margin-bottom:16px" alt="logo">
+    <div style="font-size:14px;color:var(--muted);font-weight:600;margin-bottom:4px">خدمة الأنبا إبرآم للتنمية</div>
+    <div style="font-size:19px;color:var(--gold);font-weight:800;margin-bottom:22px">مجمع التقارير الفنية</div>
+    <div style="height:1px;background:var(--border);margin:0 0 22px"></div>
+    <div style="font-size:15px;color:var(--text);font-weight:700;margin-bottom:18px">من فضلك اختر الإيبارشية لتسجيل الدخول</div>
+    <div class="fgr" style="margin-bottom:14px;text-align:right">
+      <label>الإيبارشية</label>
+      <select class="fs" id="gateDiocese" style="width:100%">
+        <option value="">-- اختر الإيبارشية --</option>
+      </select>
+    </div>
+    <div class="fgr" style="margin-bottom:16px;text-align:right">
+      <label>كلمة المرور</label>
+      <input type="password" id="gatePwd" maxlength="10" inputmode="numeric" placeholder="****" style="width:100%">
+    </div>
+    <div id="gateError" style="color:var(--red);font-size:13px;margin-bottom:10px;display:none"></div>
+    <button class="btn bp" style="width:100%;justify-content:center" onclick="attemptLogin()" id="gateBtn">&#x1F513; دخول</button>
+  </div>
+</div>
 <div class="lov" id="lov"><div class="spinner"></div><div class="lt" id="lt">جاري تحميل البيانات...</div></div>
 <div class="sync-bar">
   <div class="dot" id="dot"></div>
@@ -120,12 +141,13 @@ tr:nth-child(even) td{background:var(--s2)}tr:hover td{background:var(--gold-bg)
   <span style="margin-right:auto"></span>
   <span id="qi"></span>
   <button class="bi be" onclick="syncQ()" id="sqb" style="display:none;width:auto;padding:2px 9px;font-size:12px">&#x1F504;</button>
+  <button class="btn bs2" onclick="changeDiocese()" style="padding:4px 12px;font-size:12px;gap:5px">&#x1F6AA; خروج و اختيار إيبارشية</button>
 </div>
 <header class="app-header">
   <div class="h-inner">
     <div class="logo">
       <img id="logoImg" style="height:54px;width:54px;object-fit:contain;border-radius:50%;border:2px solid var(--gold);background:#fff;padding:2px" alt="logo">
-      <div><div class="l1">خدمة الأنبا إبرآم للتنمية</div><div class="l2">مجمع التقارير الفنية ايبارشية وسط الجيزة</div></div>
+      <div><div class="l1">خدمة الأنبا إبرآم للتنمية</div><div class="l2" id="dioceseTitle">مجمع التقارير الفنية</div></div>
     </div>
     <nav class="nav-tabs">
       <button class="nt active" onclick="showSec('dashboard',this)">&#x1F4CA; لوحة</button>
@@ -157,8 +179,6 @@ tr:nth-child(even) td{background:var(--s2)}tr:hover td{background:var(--gold-bg)
       <div class="fgr"><label>التاريخ</label><input type="date" id="f_date"></div>
       <div class="fgr"><label>الكنيسة *</label><select id="f_church" onchange="autoFill()"><option value="">-- اختر --</option></select></div>
       <div class="fgr"><label>الموقع <span style="color:var(--gold);font-size:11px">(تلقائي)</span></label><input type="text" id="f_location"></div>
-      <div class="fgr"><label>الإيبارشية</label><select id="f_diocese"><option value="">-- اختر --</option></select></div>
-      <div class="fgr"><label>المحافظة</label><select id="f_governorate"><option value="">-- اختر --</option></select></div>
       <div class="fgr"><label>الخدمة *</label><select id="f_service"><option value="">-- اختر --</option></select></div>
       <div class="fgr"><label>تفاصيل الخدمة</label><select id="f_detail"><option value="">-- اختر --</option></select></div>
       <div class="fgr"><label>الموضوع</label><input type="text" id="f_topic"></div>
@@ -244,11 +264,35 @@ try { FB = JSON.parse(decodeURIComponent(escape(atob(DATA_B64)))); }
 catch(e){ FB = {churches:[],services:[],details:[],months:[],dioceses:[],governorates:[],churchMap:{},records:[]}; }
 
 document.getElementById('logoImg').src = LOGO_B64;
+document.getElementById('gateLogoImg').src = LOGO_B64;
 
 var MONTHS = ['\u064a\u0646\u0627\u064a\u0631','\u0641\u0628\u0631\u0627\u064a\u0631','\u0645\u0627\u0631\u0633','\u0623\u0628\u0631\u064a\u0644','\u0645\u0627\u064a\u0648','\u064a\u0648\u0646\u064a\u0629','\u064a\u0648\u0644\u064a\u0648','\u0623\u063a\u0633\u0637\u0633','\u0633\u0628\u062a\u0645\u0628\u0631','\u0623\u0643\u062a\u0648\u0628\u0631','\u0646\u0648\u0641\u0645\u0628\u0631','\u062f\u064a\u0633\u0645\u0628\u0631'];
 var PAL = ['#8B6914','#1565C0','#2E7D32','#6A1B9A','#BF360C','#00695C','#AD1457','#558B2F','#E65100','#283593'];
-var DEFAULT_DIOCESE = '\u0627\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0648\u0633\u0637 \u0627\u0644\u062c\u064a\u0632\u0629';
-var DEFAULT_GOV = '\u0627\u0644\u062c\u064a\u0632\u0629';
+/* قائمة الإيبارشيات المتاحة (الأسماء يجب أن تطابق DIOCESE_CONFIG في Apps Script تماماً) */
+var DIOCESE_LIST = [
+  '\u0627\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0648\u0633\u0637 \u0627\u0644\u062c\u064a\u0632\u0629',
+  '\u0627\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0634\u0645\u0627\u0644 \u0627\u0644\u062c\u064a\u0632\u0629',
+  '\u0627\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0623\u0643\u062a\u0648\u0628\u0631 \u0648 \u0623\u0648\u0633\u064a\u0645',
+  '\u0627\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0627\u0644\u0642\u0627\u0647\u0631\u0629',
+  '\u0627\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0628\u0646\u064a \u0633\u0648\u064a\u0641',
+  '\u0627\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0627\u0644\u0645\u0646\u064a\u0627 \u0648 \u0633\u0645\u0627\u0644\u0648\u0637',
+  '\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629 7 (\u0644\u0645 \u062a\u064f\u062d\u062f\u062f \u0628\u0639\u062f)',
+  '\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629 8 (\u0644\u0645 \u062a\u064f\u062d\u062f\u062f \u0628\u0639\u062f)',
+  '\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629 9 (\u0644\u0645 \u062a\u064f\u062d\u062f\u062f \u0628\u0639\u062f)',
+  '\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629 10 (\u0644\u0645 \u062a\u064f\u062d\u062f\u062f \u0628\u0639\u062f)'
+];
+/* المحافظة تُشتق تلقائياً من الإيبارشية المختارة (بدون إدخال يدوي) */
+var DIOCESE_GOV = {};
+DIOCESE_GOV[DIOCESE_LIST[0]] = '\u0627\u0644\u062c\u064a\u0632\u0629';
+DIOCESE_GOV[DIOCESE_LIST[1]] = '\u0627\u0644\u062c\u064a\u0632\u0629';
+DIOCESE_GOV[DIOCESE_LIST[2]] = '\u0627\u0644\u062c\u064a\u0632\u0629';
+DIOCESE_GOV[DIOCESE_LIST[3]] = '\u0627\u0644\u0642\u0627\u0647\u0631\u0629';
+DIOCESE_GOV[DIOCESE_LIST[4]] = '\u0628\u0646\u064a \u0633\u0648\u064a\u0641';
+DIOCESE_GOV[DIOCESE_LIST[5]] = '\u0627\u0644\u0645\u0646\u064a\u0627';
+
+var CURRENT_DIOCESE = localStorage.getItem('curDiocese') || '';
+var CURRENT_PWD = localStorage.getItem('curPwd') || '';
+
 
 var records=[], lkp=JSON.parse(JSON.stringify(FB)), nextId=1, curPage=1, PAGE=20, filtRecs=[], pendDelId=null, charts={};
 var isOnline=navigator.onLine, offQ=JSON.parse(localStorage.getItem('offQ')||'[]');
@@ -296,7 +340,7 @@ function gasGet(){
     function cleanup(){clearTimeout(t);try{delete window[cb];}catch(e){}try{if(s.parentNode)s.parentNode.removeChild(s);}catch(e){}}
     window[cb]=function(data){if(done)return;done=true;cleanup();resolve(data);};
     s.onerror=function(){if(done)return;done=true;cleanup();resolve(null);};
-    s.src=GAS_URL+'?callback='+cb+'&nocache='+Date.now();
+    s.src=GAS_URL+'?callback='+cb+'&diocese='+encodeURIComponent(CURRENT_DIOCESE)+'&pwd='+encodeURIComponent(CURRENT_PWD)+'&nocache='+Date.now();
     document.head.appendChild(s);
   });
 }
@@ -309,7 +353,7 @@ function gasPost(pl){
     function cleanup(){clearTimeout(t);try{delete window[cb];}catch(e){}try{if(s.parentNode)s.parentNode.removeChild(s);}catch(e){}}
     window[cb]=function(d){if(done)return;done=true;cleanup();resolve(d||{status:'ok'});};
     s.onerror=function(){if(done)return;done=true;cleanup();resolve({status:'error'});};
-    s.src=GAS_URL+'?method=POST&data='+encodeURIComponent(JSON.stringify(pl))+'&callback='+cb+'&nocache='+Date.now();
+    s.src=GAS_URL+'?method=POST&data='+encodeURIComponent(JSON.stringify(pl))+'&callback='+cb+'&diocese='+encodeURIComponent(CURRENT_DIOCESE)+'&pwd='+encodeURIComponent(CURRENT_PWD)+'&nocache='+Date.now();
     document.head.appendChild(s);
   });
 }
@@ -317,7 +361,6 @@ function gasPost(pl){
 function init(){
   showL('\u062c\u0627\u0631\u064a \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a...');
   fillDrops(FB);
-  setEntryDefaults();
   loadSheet(false);
 }
 
@@ -333,7 +376,6 @@ function loadSheet(manual){
           service:r.service||'',detail:r.detail||'',topic:r.topic||'',speaker:r.speaker||'',
           repetitions:+r.repetitions||0,servants:+r.servants||0,served:+r.served||0,notes:r.notes||''};
       });
-      if(!records.length)records=FB.records.slice();
       if(d.lookups){lkp=d.lookups;fromSheet=true;}
       localStorage.setItem('cachedRecs',JSON.stringify(records));
       localStorage.setItem('cachedLkp',JSON.stringify(lkp));
@@ -351,8 +393,8 @@ function loadSheet(manual){
 
 function loadLocal(){
   var cr=localStorage.getItem('cachedRecs'), cl=localStorage.getItem('cachedLkp');
-  records=cr?JSON.parse(cr):FB.records.slice();
-  lkp=cl?JSON.parse(cl):FB;
+  records=cr?JSON.parse(cr):[];
+  lkp=cl?JSON.parse(cl):{churches:[],services:[],details:[],months:MONTHS,churchMap:{}};
   fromSheet=false;
   afterLoad();setSUI('offline');
 }
@@ -379,22 +421,19 @@ function syncQ(){
 function afterLoad(){
   nextId=records.length?Math.max.apply(null,records.map(function(r){return +r.id||0;}))+1:1;
   fillDrops(lkp);
-  setEntryDefaults();
   filterRecs();renderDash();runReport();
 }
 
 function fillDrops(L){
   var months=(L.months&&L.months.length)?L.months:MONTHS;
-  var churches=(L.churches||FB.churches).slice().sort();
-  var services=L.services||FB.services;
-  var details=L.details||FB.details;
-  var dioceses=L.dioceses||FB.dioceses;
-  var govs=L.governorates||FB.governorates;
+  var churches=(L.churches||[]).slice().sort();
+  var services=L.services||[];
+  var details=L.details||[];
   var yrs=[];
   records.forEach(function(r){if(r.year&&yrs.indexOf(r.year)===-1)yrs.push(r.year);});
   yrs.sort();
   fillSel('f_month',months);fillSel('f_service',services);fillSel('f_detail',details);
-  fillSel('f_diocese',dioceses);fillSel('f_governorate',govs);fillSel('f_church',churches);
+  fillSel('f_church',churches);
   fillSel('fSvc',services);fillSel('fMon',months);
   fillSel('rptSvc',services);fillSel('rptMon',months);
   fillSel('rptChurch',churches);fillSel('rptYear',yrs);
@@ -407,24 +446,78 @@ function fillSel(id,items){
 }
 
 /* تثبيت القيم الافتراضية في نموذج الإدخال */
-function setEntryDefaults(){
-  var dSel=document.getElementById('f_diocese');
-  var gSel=document.getElementById('f_governorate');
-  if(dSel){
-    var hasDefD=[].slice.call(dSel.options).some(function(o){return o.value===DEFAULT_DIOCESE;});
-    if(hasDefD)dSel.value=DEFAULT_DIOCESE;
-  }
-  if(gSel){
-    var hasDefG=[].slice.call(gSel.options).some(function(o){return o.value===DEFAULT_GOV;});
-    if(hasDefG)gSel.value=DEFAULT_GOV;
-  }
-}
-
 function autoFill(){
   var ch=document.getElementById('f_church').value;
-  var map=(lkp.churchMap||FB.churchMap||{});
+  var map=(lkp.churchMap||{});
   var loc=document.getElementById('f_location');
   if(ch&&map[ch]){loc.value=map[ch];loc.classList.add('lf');setTimeout(function(){loc.classList.remove('lf');},1500);}
+}
+
+function fillGateDropdown(){
+  var s=document.getElementById('gateDiocese');
+  DIOCESE_LIST.forEach(function(name){
+    var o=document.createElement('option');
+    o.value=name;o.textContent=name;
+    s.appendChild(o);
+  });
+}
+
+function updateDioceseTitle(){
+  var t=document.getElementById('dioceseTitle');
+  if(t)t.textContent='\u0645\u062c\u0645\u0639 \u0627\u0644\u062a\u0642\u0627\u0631\u064a\u0631 \u0627\u0644\u0641\u0646\u064a\u0629 \u0644\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629 '+CURRENT_DIOCESE;
+}
+
+function attemptLogin(){
+  var d=document.getElementById('gateDiocese').value;
+  var p=document.getElementById('gatePwd').value;
+  var errBox=document.getElementById('gateError');
+  errBox.style.display='none';
+  if(!d){errBox.textContent='\u064a\u0631\u062c\u0649 \u0627\u062e\u062a\u064a\u0627\u0631 \u0627\u0644\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629';errBox.style.display='block';return;}
+  if(!p){errBox.textContent='\u064a\u0631\u062c\u0649 \u0625\u062f\u062e\u0627\u0644 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631';errBox.style.display='block';return;}
+  if(!isOnline){errBox.textContent='\u064a\u062c\u0628 \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u0625\u0646\u062a\u0631\u0646\u062a \u0644\u0644\u062a\u062d\u0642\u0642 \u0645\u0646 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0641\u064a \u0623\u0648\u0644 \u062f\u062e\u0648\u0644';errBox.style.display='block';return;}
+  var btn=document.getElementById('gateBtn');
+  btn.disabled=true;btn.textContent='\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0642\u0642...';
+  CURRENT_DIOCESE=d;CURRENT_PWD=p;
+  gasGet().then(function(res){
+    btn.disabled=false;btn.innerHTML='&#x1F513; \u062f\u062e\u0648\u0644';
+    if(res&&res.status==='ok'){
+      localStorage.setItem('curDiocese',d);
+      localStorage.setItem('curPwd',p);
+      document.getElementById('gateModal').style.display='none';
+      updateDioceseTitle();
+      init();
+    } else if(res&&res.status==='auth_error'){
+      CURRENT_DIOCESE='';CURRENT_PWD='';
+      errBox.textContent='\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0647\u0630\u0647 \u0627\u0644\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629 \u0641\u064a \u0648\u0631\u0642\u0629 \u0627\u0644\u0634\u064a\u062a \u0641\u0642\u0637 \u200e\u0648\u0644\u064a\u0633\u062a \u062e\u0627\u0635\u0629 \u0628\u0627\u0644\u0645\u0648\u0642\u0639';
+      errBox.textContent='\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u062e\u0627\u0637\u0626\u0629';
+      errBox.style.display='block';
+    } else {
+      CURRENT_DIOCESE='';CURRENT_PWD='';
+      errBox.textContent='\u062a\u0639\u0630\u0651\u0631 \u0627\u0644\u0627\u062a\u0635\u0627\u0644\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649';
+      errBox.style.display='block';
+    }
+  });
+}
+
+function changeDiocese(){
+  if(!confirm('\u0647\u0644 \u062a\u0631\u064a\u062f \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062e\u0631\u0648\u062c \u0648\u0627\u0644\u0631\u062c\u0648\u0639 \u0644\u0634\u0627\u0634\u0629 \u0627\u062e\u062a\u064a\u0627\u0631 \u0627\u0644\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629\u061f'))return;
+  localStorage.removeItem('curDiocese');
+  localStorage.removeItem('curPwd');
+  localStorage.removeItem('cachedRecs');
+  localStorage.removeItem('cachedLkp');
+  location.reload();
+}
+
+function boot(){
+  fillGateDropdown();
+  if(CURRENT_DIOCESE&&CURRENT_PWD){
+    document.getElementById('gateModal').style.display='none';
+    updateDioceseTitle();
+    init();
+  } else {
+    document.getElementById('gateModal').style.display='flex';
+    hideL();
+  }
 }
 
 function showSec(n,btn){
@@ -470,7 +563,7 @@ function diceCoeff(a,b){
   return (2*inter)/((a.length-1)+(b.length-1));
 }
 function activeChurchesCount(vr){
-  var officialList=(lkp.churches||FB.churches||[]);
+  var officialList=(lkp.churches||[]);
   var officialNorm={};
   officialList.forEach(function(o){officialNorm[normChurch(o)]=o;});
   var seen={};
@@ -553,7 +646,6 @@ function clearForm(){
   document.getElementById('f_served').value=0;
   document.getElementById('editId').value='';
   document.getElementById('formTitle').textContent='\u0625\u0636\u0627\u0641\u0629 \u0628\u064a\u0627\u0646 \u062c\u062f\u064a\u062f';
-  setEntryDefaults();
 }
 
 function saveRecord(){
@@ -569,8 +661,8 @@ function saveRecord(){
     date:document.getElementById('f_date').value,
     church:ch,
     location:document.getElementById('f_location').value,
-    diocese:document.getElementById('f_diocese').value,
-    governorate:document.getElementById('f_governorate').value,
+    diocese:CURRENT_DIOCESE,
+    governorate:(DIOCESE_GOV[CURRENT_DIOCESE]||''),
     service:svc,
     detail:document.getElementById('f_detail').value,
     topic:document.getElementById('f_topic').value,
@@ -757,7 +849,7 @@ function mkHdr(title,meta){
   }
   return '<div class="ph">'+
     '<div class="ph-title"><img src="'+LOGO_B64+'" style="height:36px;width:36px;object-fit:contain">'+
-    '<span>\u062e\u062f\u0645\u0629 \u0627\u0644\u0623\u0646\u0628\u0627 \u0625\u0628\u0631\u0622\u0645 \u0644\u0644\u062a\u0646\u0645\u064a\u0629 \u2014 \u0645\u062c\u0645\u0639 \u0627\u0644\u062a\u0642\u0627\u0631\u064a\u0631 \u0627\u0644\u0641\u0646\u064a\u0629</span></div>'+
+    '<span>\u062e\u062f\u0645\u0629 \u0627\u0644\u0623\u0646\u0628\u0627 \u0625\u0628\u0631\u0622\u0645 \u0644\u0644\u062a\u0646\u0645\u064a\u0629 \u2014 \u0645\u062c\u0645\u0639 \u0627\u0644\u062a\u0642\u0627\u0631\u064a\u0631 \u0627\u0644\u0641\u0646\u064a\u0629 \u0644\u0625\u064a\u0628\u0627\u0631\u0634\u064a\u0629 '+CURRENT_DIOCESE+'</span></div>'+
     '<div class="ph-sub">'+title+' | '+now+'</div>'+m+'</div>';
 }
 
@@ -843,7 +935,7 @@ function showToast(msg,type){
 }
 function closeMo(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===this)closeMo(this.id);});});
-init();
+boot();
 </script>
 </body>
 </html>
